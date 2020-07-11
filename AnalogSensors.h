@@ -1,11 +1,12 @@
-/******************************
-    AnalogSensors
+/******************************************** Project information *************************************************
+  Name Proyect: Librería AnalogSensors
+        Author: Ing.Felipe Andrés Ángel Rodríguez
+          Data: 10/Julio/2020
+           Rev: 1.0
 
-    Author: Ing.Felipe Andrés Ángel Rodríguez
-
-      Date: 2020
- ******************************/
-
+  Description : Esta librería se encarga de leer los valores de un sensor analogico, tambien se implementan 
+                diferentes filtros para el procesamiento de datos 
+******************************************************************************************************************/
 
 #ifndef ANALOGSENSOR_H
 #define ANALOGSENSOR_H
