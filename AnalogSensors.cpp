@@ -2,20 +2,20 @@
 
 AnalogSensor::AnalogSensor(int pin)
 {
-  pinMode(pin, INPUT);
+  pinMode(pin, INPUT);                    // Configura el pin analógico GPIO como entrada.
   _pin = pin;
 }
 
 int AnalogSensor::rawADCReadings() {      // Lecturas del ADC sin procesar.
-  _valueADC = analogRead(_pin);           // Lee el valor del potenciómetro (valor entre 0 y 4095)
+  _adcRawValues = analogRead(_pin);       // Lee el valor del potenciómetro (valor entre 0 y 4095)
   delay(TIMERADQ);                        // Tiempo de adquisición en milisegundos.
 
-  return _valueADC;
+  return _adcRawValues;
 }
 
 float AnalogSensor::writeValueVoltaje() {
   rawADCReadings();
-  _valVoltaje = (_valueADC * VOLTAJEMAX) / RESOLUTION;      // Convierte los valores del ADC a valores de voltaje.
+  _valVoltaje = (_adcRawValues * VOLTAJEMAX) / RESOLUTION;      // Convierte los valores del ADC a valores de voltaje.
 
   return _valVoltaje;
 }
@@ -29,92 +29,8 @@ float AnalogSensor::writeValuePressure(float valPressureMin, float valPressureMa
 }
 
 
-
-
-
-
-//***************************************** Variables Macros PINOUT ***********************************************
-// Configuración pinout del ESP32 para conexiones con el proyecto:
-
-#define LEDPIN          2       // Pin GPIO como pin digital que incorpora el led indicar
-#define ADCPIN         33       // Pin GPIO como pin analógico utilizado para conectar el potenciómetro
-
-//********************************************* Variables Macros **************************************************
-#define RANGE_MIN        0       // Rango mínimo de lectura del ADC.
-#define RANGE_MAX     4095       // Rango máximo de lectura del ADC.
-#define PWM_MIN          0       // Rango mínimo de escritura del PWM.
-#define PWM_MAX        255       // Rango máximo de escritura del PWM. 
-#define VOLTAJE_MAX    3.3       // 
-#define TIMERADQ        20       // Tiempo de adquisición
-#define n               50       // Número de puntos de la média móvil. (250 para una respuesta más lenta y mejor filtrado)
-//#define k             0.09       // Constante para cálculo de filtro exponencial (entre más pequeño es mejor filtra pero tarda más en estabilizarse)
-
-//******************************************** Variables Globales *************************************************
-String tab_space = "\t\t";      //
-
-int adcRaw       = 0;           // Variable global para leer los valores adquiridos por los canales ADC.
-int dutyCycle    = 0;           // Variable global para leer los valores adquiridos por los canales ADC.
-float ValVoltaje = 0;           // Variable global para leer los valores adquiridos por los canales ADC.
-
-int adcRawAux    = 0;           // Variable global para leer los valores adquiridos por los canales ADC.
-//int sensorValue = 0;         // Recibe el valor original filtrado.
-int numbers[n] = {0};           // Vector con los valores para el promedio móvil.
-
-// setting PWM properties
-const int freq = 5000;
-const int ledChannel = 0;
-const int resolution = 8;
-
-//***************************************** Declaración de Objetos ************************************************
-
-//**************************************** Declaración de Funciones ***********************************************
-long moving_average();          // Función que cálcula el filtro de media móvil para la lectura del ADC.
-
-//**************************************** Inicio Programa Principal **********************************************
-void setup() {
-  Serial.begin(115200);         // Initializa la comunicación serial a 19200 bits por segundos
-  pinMode(ADCPIN, INPUT);      // Initialize analog pin as an input.
-  pinMode(LEDPIN, OUTPUT);     // Initialize digital pin digital as an output.
-
-  // configure LED PWM functionalitites
-  ledcSetup(ledChannel, freq, resolution);
-
-  // attach the channel to the GPIO to be controlled
-  ledcAttachPin(LEDPIN, ledChannel);
-}
-
-//********************************************** Inicio del Loop **************************************************
-void loop() {
-  adcRaw = analogRead(ADCPIN);                         // Lee el valor del potenciómetro (valor entre 0 y 4095)
-  adcRawAux = adcRaw;
-
-  //dutyCycle = expRunningAverage(median(adcRaw));              // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
-  //dutyCycle = expRunningAverageAdaptive(median(adcRaw));      // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
-
-  //dutyCycle = midArifm2(adcRaw);                     // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
-  //dutyCycle = runMiddleArifmBad(adcRaw);             // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
-  //dutyCycle = runMiddleArifm(adcRaw);                // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
-  //dutyCycle = runMiddleArifmOptim(adcRaw);           // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
-
-  //dutyCycle = expRunningAverage(adcRaw);             // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
-  //dutyCycle = expRunningAverageAdaptive(adcRaw);     // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
-  //dutyCycle = median(adcRaw);                        //
-  dutyCycle = simpleKalman(adcRaw);                  //
-  //dutyCycle = ABfilter(adcRaw);                      // TIENE SOBRE IMPULSO HAY QUE AJUSTAR VALORES
-
-  //dutyCycle = moving_average(adcRaw);                                    // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
-
-  ValVoltaje = (dutyCycle * VOLTAJE_MAX) / RANGE_MAX;                    // Convierte los valores del PWM a voltaje
-  dutyCycle = map(dutyCycle, RANGE_MIN, RANGE_MAX, PWM_MIN, PWM_MAX) ;   // ESP32 La función map cambia el rango de entrada de 0-4095 a 0-255 (el rango que soporta analogWrite)
-
-  ledcWrite(ledChannel, dutyCycle);       // changing the LED brightness with PWM
-  delay(15);                              //
-
-  serialPlotter();                        // Invoca la función que se encarga de organizar los datos para graficarlos en el serial plotter de Arduino.
-}
-
 //********************************************* Inicio Funciones **************************************************
-long moving_average(long newVal) {                   // Función que cálcula el filtro de media móvil para la lectura del ADC.
+float AnalogSensor::moving_average(float newVal) {      // Función que cálcula el filtro de media móvil para la lectura del ADC.
   for (int i = n - 1; i > 0; i--) {
     numbers[i] = numbers[i - 1];          // Desplaza los elementos del vector de media móvil.
   }
@@ -143,7 +59,7 @@ const int NUM_READ = 50;  // El número de promedios para el aritmo promedio. fi
 //}
 
 // significado aritmetico
-float midArifm2(float newVal) {
+float AnalogSensor::midArifm2(float newVal) {
   static byte counter = 0;
   static float prevResult = 0;
   static float sum = 0;
@@ -158,7 +74,7 @@ float midArifm2(float newVal) {
 }
 
 // la media aritmética es generalmente no óptima
-float runMiddleArifmBad(float newVal) {  // adquiere un nuevo significado
+float AnalogSensor::runMiddleArifmBad(float newVal) {  // adquiere un nuevo significado
   static float valArray[NUM_READ];       // una matriz
 
   for (int i = 0; i < NUM_READ - 1; i++)
@@ -174,50 +90,50 @@ float runMiddleArifmBad(float newVal) {  // adquiere un nuevo significado
 }
 
 // significado aritmetico
-float runMiddleArifm(float newVal) {  // принимает новое значение
-  static byte idx = 0;                // индекс
-  static float valArray[NUM_READ];    // массив
-  valArray[idx] = newVal;             // пишем каждый раз в новую ячейку
-  if (++idx >= NUM_READ) idx = 0;     // перезаписывая самое старое значение
-  float average = 0;                  // обнуляем среднее
+float AnalogSensor::runMiddleArifm(float newVal) {      // adquiere un nuevo significado
+  static byte idx = 0;                    // índice
+  static float valArray[NUM_READ];        // Vector para almacenar los valores.
+  valArray[idx] = newVal;                 // Escribir cada vez a una nueva celda.
+  if (++idx >= NUM_READ) idx = 0;         // Sobrescribir el valor más antiguo.
+  float average = 0;                      // Inicializa el promedio en cero.
   for (int i = 0; i < NUM_READ; i++) {
-    average += valArray[i];           // суммируем
+    average += valArray[i];               // Resumir
   }
-  return (float)average / NUM_READ;   // возвращаем
+  return (float)average / NUM_READ;       // Regreso
 }
 
 // media aritmética de carrera óptima
-float runMiddleArifmOptim(float newVal) {
+float AnalogSensor::runMiddleArifmOptim(float newVal) {
   static int t = 0;
   static int vals[NUM_READ];
   static int average = 0;
-  if (++t >= NUM_READ) t = 0; // перемотка t
-  average -= vals[t];         // вычитаем старое
-  average += newVal;          // прибавляем новое
-  vals[t] = newVal;           // запоминаем в массив
-  return ((float)average / NUM_READ);
+  if (++t >= NUM_READ) t = 0;             // Rebobinar t
+  average -= vals[t];                     // Restar lo viejo
+  average += newVal;                      // Agregar nuevo
+  vals[t] = newVal;                       // Recuerde ordenar
+  return ((float)average / NUM_READ);     // Retorna el valor dividido por el número de promedio.
 }
 
 
-long expRunningAverage(long newVal) {                 // Función que cálcula el filtro promedio de funcionamiento, una versión aún más óptima del filtro anterior para la lectura del ADC.
+float AnalogSensor::expRunningAverage(float newVal) {    // Función que cálcula el filtro promedio de funcionamiento, una versión aún más óptima del filtro anterior para la lectura del ADC.
   static long filVal = 0;
   filVal += (newVal - filVal) * 0.09;      // Filtro exponencial
   return filVal;                           // Retorna el valor cálculado del filtro.
 }
 
 // coeficiente adaptativo corriente promedio
-long expRunningAverageAdaptive(long newVal) {
+float AnalogSensor::expRunningAverageAdaptive(float newVal) {
   static float filVal = 0;
   float k;
-  // резкость фильтра зависит от модуля разности значений
-  if (abs(newVal - filVal) > 1.5) k = 0.9;
+
+  if (abs(newVal - filVal) > 1.5) k = 0.9;   // La nitidez del filtro depende del módulo de la diferencia de valores.
   else k = 0.03;
 
   filVal += (newVal - filVal) * k;
   return filVal;
 }
 
-long median(long newVal) {
+float AnalogSensor::median(float newVal) {
   static float buf[3];
   static byte count = 0;
   buf[count] = newVal;
@@ -245,7 +161,7 @@ long median(long newVal) {
 float _err_measure = 0.7;  // Ruido de medición aproximado
 float _q = 0.09;           // tasa de cambio de valores 0.001-1, varíe usted mismo
 
-long simpleKalman(long newVal) {
+float AnalogSensor::simpleKalman(float newVal) {
   float _kalman_gain, _current_estimate;
   static float _err_estimate = _err_measure;
   static float _last_estimate;
@@ -264,7 +180,7 @@ float dt = 0.02;
 float sigma_process = 3.0;
 float sigma_noise = 0.7;
 
-long ABfilter(long newVal) {
+float AnalogSensor::ABfilter(float newVal) {
   static float xk_1, vk_1, a, b;
   static float xk, vk, rk;
   static float xm;
@@ -283,17 +199,4 @@ long ABfilter(long newVal) {
   xk_1 = xk;
   vk_1 = vk;
   return xk_1;
-}
-
-
-void serialPlotter() {        // Función que se encarga de organizar los datos para graficarlos en el serial plotter de Arduino.
-  adcRawAux = map(adcRaw, RANGE_MIN, RANGE_MAX, PWM_MIN, PWM_MAX) ;   // ESP32 La función map cambia el rango de entrada de 0-4095 a 0-255 (el rango que soporta analogWrite)
-  Serial.print("ADCRAW:");                // Imprime el palabra en el Monitor Serie
-  Serial.print(adcRawAux);                // Imprime el valor leido por el Monitor Serie
-  Serial.print(" ");                      // Imprime el palabra en el Monitor Serie
-  Serial.print("ADCFILTER:");             // Imprime el palabra en el Monitor Serie
-  Serial.println(dutyCycle);              // Imprime el valor leido por el Monitor Serie
-  //Serial.print(" ");                      // Imprime el palabra en el Monitor Serie
-  //Serial.print("VOLTAJE:");               // Imprime el palabra en el Monitor Serie
-  //Serial.println(ValVoltaje);             // Imprime el valor leido por el Monitor Serie
 }
