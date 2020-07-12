@@ -4,8 +4,8 @@
           Data: 10/Julio/2020
            Rev: 1.0
 
-  Description : Esta librería se encarga de leer los valores de un sensor analogico, tambien se implementan 
-                diferentes filtros para el procesamiento de datos 
+  Description : Esta librería se encarga de leer los valores de un sensor analógico, también se implementan 
+                diferentes filtros para el procesamiento de datos. 
 ******************************************************************************************************************/
 
 #ifndef ANALOGSENSOR_H
