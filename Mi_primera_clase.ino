@@ -76,15 +76,15 @@ void parallelADCpins_SerialMonitor() {
 
   ValVoltaje1 = (Sensor1 * 3.3) / 4095;  // Convierte los valores del PWM a voltaje
 
-  Presion1 = map(ValVoltaje1, 0.86, 1.37, 10876, 15537) ;    // ESP32 La función map cambia el rango de entrada de 0-4095 a 0-255 (el rango que soporta analogWrite)
+  Presion1 = map(ValVoltaje1, 0.86, 1.37, 10876, 15537) ;   // ESP32 La función map cambia el rango de entrada de 0-4095 a 0-255 (el rango que soporta analogWrite)
 
   Serial.print("FUN VALUE VOLTAJE 1: ");                    // Imprime el mensaje en el Monitor Serie.
-  Serial.print(ValVoltaje1);                            // Imprime el valor leído por el Monitor Serie.
+  Serial.print(ValVoltaje1);                                // Imprime el valor leído por el Monitor Serie.
   Serial.print("\tFUN VALUE PRESION 1: ");                  // Imprime el mensaje en el Monitor Serie.
-  Serial.print(Presion1);                               // Imprime el valor leido por el Monitor Serie.
-  Serial.print(" mmH2O");                               // Imprime el mensaje en el Monitor Serie.
-  Serial.print("\tADC1_CH0: ");                            // Imprime el mensaje en el Monitor Serie.
-  Serial.println(Sensor1);                                // Imprime el valor leído por el Monitor Serie
+  Serial.print(Presion1);                                   // Imprime el valor leido por el Monitor Serie.
+  Serial.print(" mmH2O");                                   // Imprime el mensaje en el Monitor Serie.
+  Serial.print("\tADC1_CH0: ");                             // Imprime el mensaje en el Monitor Serie.
+  Serial.println(Sensor1);                                  // Imprime el valor leído por el Monitor Serie
   Serial.print("\n");
 
   delay(20);                                      // Tiempo de espera
