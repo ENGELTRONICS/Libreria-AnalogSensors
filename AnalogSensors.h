@@ -18,8 +18,6 @@
 #endif
 
 //********************************************* Variables Macros **************************************************
-#define RESOLUTION     4095       // Constante para definir la escala a la que se realizará la conversión del ADC.
-#define VOLTAJEMAX      3.3       // Constante de voltaje para realizar los cálculos del ADC.
 #define TIMERADQ         20       // Tiempo de adquisición en milisegundos.
 
 //********************************************* Variables Macros **************************************************
@@ -27,43 +25,36 @@
 #define RANGE_MAX     4095       // Rango máximo de lectura del ADC.
 #define PWM_MIN          0       // Rango mínimo de escritura del PWM.
 #define PWM_MAX        255       // Rango máximo de escritura del PWM. 
-#define VOLTAJE_MAX    3.3       // 
-#define TIMERADQ        20       // Tiempo de adquisición
 #define n               50       // Número de puntos de la média móvil. (250 para una respuesta más lenta y mejor filtrado)
 //#define k             0.09       // Constante para cálculo de filtro exponencial (entre más pequeño es mejor filtra pero tarda más en estabilizarse)
 
 //******************************************** Variables Globales *************************************************
 
-int adcRaw       = 0;           // Variable global para leer los valores adquiridos por los canales ADC.
-int dutyCycle    = 0;           // Variable global para leer los valores adquiridos por los canales ADC.
-float ValVoltaje = 0;           // Variable global para leer los valores adquiridos por los canales ADC.
-
-int adcRawAux    = 0;           // Variable global para leer los valores adquiridos por los canales ADC.
+//int dutyCycle    = 0;           // Variable global para leer los valores adquiridos por los canales ADC.
+//float ValVoltaje = 0;           // Variable global para leer los valores adquiridos por los canales ADC.
+//int adcRawAux    = 0;           // Variable global para leer los valores adquiridos por los canales ADC.
 //int sensorValue = 0;         // Recibe el valor original filtrado.
-int numbers[n] = {0};           // Vector con los valores para el promedio móvil.
+const int _NUM_READ = 50;       // El número de promedios para el aritmo promedio. filtros
 
 //********************************************** Inicio del Loop **************************************************
-void loop() {
-  adcRaw = analogRead(ADCPIN);                         // Lee el valor del potenciómetro (valor entre 0 y 4095)
+//adcRaw = analogRead(ADCPIN);                         // Lee el valor del potenciómetro (valor entre 0 y 4095)
 
   //dutyCycle = expRunningAverage(median(adcRaw));              // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
   //dutyCycle = expRunningAverageAdaptive(median(adcRaw));      // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
 
-  serialPlotter();                        // Invoca la función que se encarga de organizar los datos para graficarlos en el serial plotter de Arduino.
-}
+//  serialPlotter();                        // Invoca la función que se encarga de organizar los datos para graficarlos en el serial plotter de Arduino.
 
 
-
-
-class AnalogSensor
+class AnalogSensors
 {
   public:
-    AnalogSensor(int pin);
+    AnalogSensors(int pin);
     int rawADCReadings();
-    float writeValueVoltaje();
-    float writeValuePressure(float valPressureMin, float valPressureMax, float valRangeMin, float valRangeMax);
+    float rawVoltageValues( float resolution = 1024.0, float voltajeMax = 5.0 );                                             // Método que cálcula los valores de voltaje sin procesar de manera manual.
+    float manualVoltageValueCalculation( float newVal, float resolution = 1024.0, float voltajeMax = 5.0 );                  // Método que cálcula los valores de voltaje con o sin procesar de manera manual.  
+    float mapPressure(float valVoltaje, float valPressureMin, float valPressureMax, float valRangeMin, float valRangeMax);
     
-    float moving_average(float newVal);                                    // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
+    float moving_average(float newVal);                // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
 
     float midArifm2(float newVal);                     // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
     float runMiddleArifmBad(float newVal);             // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
@@ -72,17 +63,20 @@ class AnalogSensor
     float expRunningAverage(float newVal);             // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
     float expRunningAverageAdaptive(float newVal);     // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
     float median(float newVal);                        //
-    float simpleKalman(float newVal);                  //
-    float ABfilter(float newVal);                      // TIENE SOBRE IMPULSO HAY QUE AJUSTAR VALORES
+    float simpleKalman(float newVal,float _err_measure = 0.7, float _q = 0.09);                             //
+    float ABfilter(float newVal,float dt = 0.02,float sigma_process = 3.0,float sigma_noise = 0.7);         // TIENE SOBRE IMPULSO HAY QUE AJUSTAR VALORES
 
 
 
   private:
     int _pin;                       // Pin GPIO como pin analógico utilizado para conectar un sensor analógico.
     int   _adcRawValues  = 0;       // Variable que almacena los valores sin procesar de ADC.
-    float _valVoltaje    = 0.0;
-    float _valuePressure = 0.0;
-
+    float _rawValVoltaje = 0.0;     //
+    float _valVoltaje    = 0.0;     //
+    float _valuePressure = 0.0;     //
+    
+    int _numbers[n] = {0};          // Vector con los valores para el promedio móvil.
+    
 
 };
 
