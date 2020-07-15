@@ -11,9 +11,20 @@ AnalogSensors	KEYWORD1	AnalogSensors
 # Methods and Functions (KEYWORD2)
 ###########################################
 
-readValueADC	KEYWORD2
-writeValueVoltaje	KEYWORD2
-writeValuePressure	KEYWORD2
+rawADCReadings	KEYWORD2
+rawVoltageValues	KEYWORD2
+manualVoltageValueCalculation	KEYWORD2
+mapPressure	KEYWORD2
+moving_average	KEYWORD2
+midArifm2	KEYWORD2
+runMiddleArifmBad	KEYWORD2
+runMiddleArifm	KEYWORD2
+runMiddleArifmOptim	KEYWORD2
+expRunningAverage	KEYWORD2
+expRunningAverageAdaptive	KEYWORD2
+median	KEYWORD2
+simpleKalman	KEYWORD2
+ABfilter	KEYWORD2
 
 ###########################################
 # Constants (LITERAL1)
