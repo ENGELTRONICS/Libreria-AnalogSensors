@@ -51,7 +51,7 @@ class AnalogSensors
     AnalogSensors(int pin);
     int rawADCReadings();
     float rawVoltageValues( float resolution = 1024.0, float voltajeMax = 5.0 );                                             // Método que cálcula los valores de voltaje sin procesar de manera manual.
-    float manualVoltageValueCalculation( float newVal, float resolution = 1024.0, float voltajeMax = 5.0 );                  // Método que cálcula los valores de voltaje con o sin procesar de manera manual.  
+    float voltageCalculation( float newVal, float resolution = 1024.0, float voltajeMax = 5.0 );                  // Método que cálcula los valores de voltaje con o sin procesar de manera manual.  
     float mapPressure(float valVoltaje, float valPressureMin, float valPressureMax, float valRangeMin, float valRangeMax);
     
     float moving_average(float newVal);                // Invoca la función que cálcula el filtro de media móvil para la lectura del ADC.
@@ -67,7 +67,6 @@ class AnalogSensors
     float ABfilter(float newVal,float dt = 0.02,float sigma_process = 3.0,float sigma_noise = 0.7);         // TIENE SOBRE IMPULSO HAY QUE AJUSTAR VALORES
 
 
-
   private:
     int _pin;                       // Pin GPIO como pin analógico utilizado para conectar un sensor analógico.
     int   _adcRawValues  = 0;       // Variable que almacena los valores sin procesar de ADC.
@@ -77,7 +76,6 @@ class AnalogSensors
     
     int _numbers[n] = {0};          // Vector con los valores para el promedio móvil.
     
-
 };
 
 #endif /* ANALOGSENSOR_H */

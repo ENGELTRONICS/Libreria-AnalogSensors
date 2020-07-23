@@ -1,17 +1,17 @@
 #include "AnalogSensors.h"
 
-AnalogSensors::AnalogSensors(int pin) {     //
+AnalogSensors::AnalogSensors(int pin) {   //
   pinMode(pin, INPUT);                    // Configura el pin analógico GPIO como entrada.
   _pin = pin;                             //
 }
 
-int AnalogSensors::rawADCReadings() {      // Método que adquiere los valores del ADC sin procesar.
+int AnalogSensors::rawADCReadings() {     // Método que adquiere los valores del ADC sin procesar.
   _adcRawValues = analogRead(_pin);       // Lee el valor del potenciómetro (valor entre 0 y 4095)
   delay(TIMERADQ);                        // Tiempo de adquisición en milisegundos.
   return _adcRawValues;                   // Retorna el valor que adquiere el ADC.
 }
 
-float AnalogSensors::manualVoltageValueCalculation(float newVal, float resolution, float voltajeMax) {                      // Método que cálcula los valores de voltaje con o sin procesar de manera manual.  
+float AnalogSensors::voltageCalculation(float newVal, float resolution, float voltajeMax) {                      // Método que cálcula los valores de voltaje con o sin procesar de manera manual.  
   if( resolution < 200 ){
     resolution = pow( 2 , resolution );    // Sintaxis pow(base, exponent)
   }
@@ -22,7 +22,7 @@ float AnalogSensors::manualVoltageValueCalculation(float newVal, float resolutio
 
 float AnalogSensors::rawVoltageValues(float resolution, float voltajeMax) {                      // Método que cálcula los valores de voltaje sin procesar de manera manual.
   
-  _rawValVoltaje = manualVoltageValueCalculation(rawADCReadings(), resolution, voltajeMax);
+  _rawValVoltaje = voltageCalculation(rawADCReadings(), resolution, voltajeMax);
   
   return _rawValVoltaje;                                         // Retorna el valor del voltaje cálculado sin filtros de forma manual.
 }
@@ -135,7 +135,7 @@ float AnalogSensors::expRunningAverageAdaptive(float newVal) {
   return filVal;
 }
 
-float AnalogSensors::median(float newVal) {    //
+float AnalogSensors::median(float newVal) {   //
   static float buf[3];                        //
   static byte count = 0;                      //
   buf[count] = newVal;                        //
