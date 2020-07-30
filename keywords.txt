@@ -14,7 +14,8 @@ AnalogSensors	KEYWORD1	AnalogSensors
 rawADCReadings	                KEYWORD2
 rawVoltageValues	            KEYWORD2
 voltageCalculation	            KEYWORD2
-mapPressure	                    KEYWORD2
+mapLong	                        KEYWORD2
+slopePoint	                    KEYWORD2
 moving_average	                KEYWORD2
 midArifm2	                    KEYWORD2
 runMiddleArifmBad	            KEYWORD2

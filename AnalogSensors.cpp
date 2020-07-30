@@ -11,8 +11,8 @@ int AnalogSensors::rawADCReadings() {     // Método que adquiere los valores de
   return _adcRawValues;                   // Retorna el valor que adquiere el ADC.
 }
 
-float AnalogSensors::voltageCalculation(float newVal, float resolution, float voltajeMax) {                      // Método que cálcula los valores de voltaje con o sin procesar de manera manual.  
-  if( resolution < 200 ){
+float AnalogSensors::voltageCalculation(float newVal, float resolution, float voltajeMax) {                      // Método que cálcula los valores de voltaje con o sin procesar de manera manual.
+  if ( resolution < 200 ) {
     resolution = pow( 2 , resolution );    // Sintaxis pow(base, exponent)
   }
 
@@ -21,16 +21,22 @@ float AnalogSensors::voltageCalculation(float newVal, float resolution, float vo
 }
 
 float AnalogSensors::rawVoltageValues(float resolution, float voltajeMax) {                      // Método que cálcula los valores de voltaje sin procesar de manera manual.
-  
+
   _rawValVoltaje = voltageCalculation(rawADCReadings(), resolution, voltajeMax);
-  
+
   return _rawValVoltaje;                                         // Retorna el valor del voltaje cálculado sin filtros de forma manual.
 }
 
-float AnalogSensors::mapPressure(float valVoltaje, float valPressureMin, float valPressureMax, float valRangeMin, float valRangeMax) {
-  _valuePressure = map( valVoltaje, valPressureMin, valPressureMax,    
-                        valRangeMin, valRangeMax );                     // ESP32 La función map cambia el rango de entrada a un valor mínimo y máximo deseado.
-  return _valuePressure;                                                //
+long AnalogSensors::mapLong( long valuesX, long valInMin, long valInMax, long valOutMin, long valOutMax ) {     // Método que cálcula los valores usando la función map (solo retorna enteros).
+
+  _valueMapLong = map( valuesX, valInMin, valInMax, valOutMin, valOutMax );      // ESP32 La función map cambia el rango de entrada a un valor mínimo y máximo deseado.
+  return _valueMapLong;                                                          // Retorna el valor cálculado.
+}
+
+float AnalogSensors::slopePoint( float valVoltaje, float x1, float y1, float x2, float y2 ) {                // Método que cálcula el valor de 'Y' en la ecuación punto pendiente dados (X1,Y1) : (X2,Y2).
+
+  _valueSlopePoint = (((y2 - y1) / (x2 - x1)) * (valVoltaje - x1)) + y1;    // Cálculo de la ecuación punto pendiente para recta de sensores líneales.
+  return _valueSlopePoint;                                           // Retorna el valor cálculado.
 }
 
 //********************************************* Inicio Funciones **************************************************
@@ -163,7 +169,7 @@ float AnalogSensors::median(float newVal) {   //
 //float _err_measure = 0.7;  // Ruido de medición aproximado
 //float _q = 0.09;           // tasa de cambio de valores 0.001-1, varíe usted mismo
 
-float AnalogSensors::simpleKalman(float newVal,float _err_measure, float _q) {
+float AnalogSensors::simpleKalman(float newVal, float _err_measure, float _q) {
   float _kalman_gain, _current_estimate;
   static float _err_estimate = _err_measure;
   static float _last_estimate;
@@ -179,11 +185,11 @@ float AnalogSensors::simpleKalman(float newVal,float _err_measure, float _q) {
 
 // período de muestreo (mediciones), variación del proceso, variación de ruido
 /*
-float dt = 0.02;
-float sigma_process = 3.0;
-float sigma_noise = 0.7;
+  float dt = 0.02;
+  float sigma_process = 3.0;
+  float sigma_noise = 0.7;
 */
-float AnalogSensors::ABfilter(float newVal,float dt,float sigma_process,float sigma_noise) {
+float AnalogSensors::ABfilter(float newVal, float dt, float sigma_process, float sigma_noise) {
   static float xk_1, vk_1, a, b;
   static float xk, vk, rk;
   static float xm;
